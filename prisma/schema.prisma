@@ -1,0 +1,563 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ======== ENUMS ========
+// Note: MongoDB doesn't support enums natively, but Prisma will handle this
+
+enum UserRole {
+  PATIENT
+  DOCTOR
+  DERMATOLOGIST
+  ONCOLOGIST
+  PATHOLOGIST
+  NURSE
+  ADMIN
+  PROVIDER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum AppointmentStatus {
+  REQUESTED
+  CONFIRMED
+  COMPLETED
+  CANCELED
+  RESCHEDULED
+  NO_SHOW
+}
+
+enum AppointmentType {
+  IN_PERSON
+  VIDEO_CONSULTATION
+  DERMOSCOPY_SCAN
+  FOLLOW_UP
+  BIOPSY
+  SURGICAL_CONSULT
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+  UNKNOWN
+}
+
+enum LesionType {
+  MELANOMA
+  BASAL_CELL_CARCINOMA
+  SQUAMOUS_CELL_CARCINOMA
+  ACTINIC_KERATOSIS
+  NEVUS
+  SEBORRHEIC_KERATOSIS
+  OTHER
+  UNKNOWN
+}
+
+enum BodyLocation {
+  HEAD
+  NECK
+  CHEST
+  BACK
+  ABDOMEN
+  ARMS
+  HANDS
+  LEGS
+  FEET
+  OTHER
+}
+
+enum NotificationType {
+  CONNECTION_APPROVED
+  CONNECTION_DECLINED
+  CONNECTION_REQUEST
+  APPOINTMENT_REMINDER
+  MEDICATION_REMINDER
+  RESULT_AVAILABLE
+  DOCTOR_MESSAGE
+  HIGH_RISK_ALERT
+  UV_EXPOSURE_WARNING
+  SYSTEM
+}
+
+enum ConnectionStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+// ======== MODELS ========
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  role          UserRole  @default(DOCTOR)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts           Account[]
+  sessions           Session[]
+  profile            Profile?
+  doctor             Doctor?
+  patient            Patient?
+  appointments       Appointment[]    @relation("UserAppointments")
+  doctorAppointments Appointment[]    @relation("DoctorAppointments")
+  notifications      Notification[]
+  imageUploads       ImageUpload[]
+  analysisResults    AnalysisResult[]
+  messages           Message[]        @relation("MessageSender")
+  receivedMessages   Message[]        @relation("MessageReceiver")
+  caseNotes          CaseNote[]
+  settings           UserSettings?
+  passwordReset      PasswordReset?
+}
+
+model Profile {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String    @unique @db.ObjectId
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName   String
+  lastName    String
+  phoneNumber String?
+  dateOfBirth DateTime?
+  gender      Gender?
+  avatarUrl   String?
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?
+  country     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Patient {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String    @unique @db.ObjectId
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  height            Float? // in cm
+  weight            Float? // in kg
+  allergies         String?
+  emergencyContact  String?
+  emergencyPhone    String?
+  skinType          Int? // Fitzpatrick scale 1-6
+  familyHistory     Boolean? // Family history of skin cancer
+  previousMelanoma  Boolean? // Previous melanoma diagnosis
+  uvExposureHistory String?
+  sunscreenUse      Boolean?
+  lastExamDate      DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  medicalConditions MedicalCondition[]
+  lesionCases       LesionCase[]
+  ConnectionRequest ConnectionRequest[]
+}
+
+model Doctor {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String   @unique @db.ObjectId
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  licenseNumber     String?  @unique
+  specialties       String[] // Array of specialty names
+  bio               String?
+  consultationFee   Float?
+  rating            Float?
+  reviewCount       Int      @default(0)
+  isVerified        Boolean  @default(false)
+  totalPatients     Int      @default(0)
+  melanomaCases     Int      @default(0)
+  avgDetectionTime  Float? // Average days to detection
+  detectionAccuracy Float? // Percentage accuracy
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  education         Education[]
+  certifications    Certification[]
+  availability      DoctorAvailability[]
+  reviews           DoctorReview[]
+  facilities        DoctorFacility[]
+  ConnectionRequest ConnectionRequest[]
+}
+
+model MedicalCondition {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  patientId     String    @db.ObjectId
+  patient       Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  name          String
+  diagnosedDate DateTime?
+  notes         String?
+  isCurrent     Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Education {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  doctorId     String   @db.ObjectId
+  doctor       Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  institution  String
+  degree       String
+  fieldOfStudy String
+  startYear    Int
+  endYear      Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Certification {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  doctorId          String    @db.ObjectId
+  doctor            Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  name              String
+  issuingBody       String
+  certificationType String
+  issueDate         DateTime
+  expiryDate        DateTime?
+  certificateUrl    String?
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model DoctorAvailability {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  doctorId    String   @db.ObjectId
+  doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int // 0-6 for Sunday-Saturday
+  startTime   String // Format: "HH:MM"
+  endTime     String // Format: "HH:MM"
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DoctorReview {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  doctorId    String   @db.ObjectId
+  doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patientName String // Anonymous or first name
+  rating      Float // 1-5
+  comment     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Appointment {
+  id             String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String            @db.ObjectId
+  user           User              @relation("UserAppointments", fields: [userId], references: [id])
+  doctorId       String            @db.ObjectId
+  doctor         User              @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  date           DateTime
+  duration       Int // in minutes
+  type           AppointmentType
+  status         AppointmentStatus @default(REQUESTED)
+  reasonForVisit String?
+  notes          String?
+  location       String?
+  followUpNeeded Boolean           @default(false)
+  lesionCaseId   String?           @db.ObjectId
+  lesionCase     LesionCase?       @relation(fields: [lesionCaseId], references: [id])
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  VideoCallRoom  VideoCallRoom?
+}
+
+model ImageUpload {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String        @db.ObjectId
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imageUrl     String
+  thumbnailUrl String?
+  captureDate  DateTime      @default(now())
+  bodyLocation BodyLocation?
+  lesionSize   Float? // in mm
+  notes        String?
+  lesionCaseId String?       @db.ObjectId
+  lesionCase   LesionCase?   @relation(fields: [lesionCaseId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  analysisResults AnalysisResult[]
+}
+
+model AnalysisResult {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String       @db.ObjectId
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imageId          String?      @db.ObjectId
+  image            ImageUpload? @relation(fields: [imageId], references: [id], onDelete: SetNull)
+  riskLevel        RiskLevel
+  confidence       Float // 0-100
+  lesionType       LesionType   @default(UNKNOWN)
+  observations     String?
+  recommendations  String?
+  reviewedByDoctor Boolean      @default(false)
+  doctorNotes      String?
+  lesionCaseId     String?      @db.ObjectId
+  lesionCase       LesionCase?  @relation(fields: [lesionCaseId], references: [id])
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  abcdeResults ABCDECriteria?
+  similarCases SimilarCase[]
+}
+
+model ABCDECriteria {
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  analysisResultId String         @unique @db.ObjectId
+  analysisResult   AnalysisResult @relation(fields: [analysisResultId], references: [id], onDelete: Cascade)
+  asymmetry        Boolean
+  asymmetryScore   Float? // 0-1 score
+  border           Boolean
+  borderScore      Float? // 0-1 score
+  color            Boolean
+  colorScore       Float? // 0-1 score
+  diameter         Boolean
+  diameterValue    Float? // in mm
+  evolution        Boolean
+  evolutionNotes   String?
+  totalFlags       Int
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model SimilarCase {
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  analysisResultId String         @db.ObjectId
+  analysisResult   AnalysisResult @relation(fields: [analysisResultId], references: [id], onDelete: Cascade)
+  caseNumber       String
+  imageUrl         String
+  diagnosis        String
+  riskLevel        RiskLevel
+  similarityScore  Float? // 0-100
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model LesionCase {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  patientId     String        @db.ObjectId
+  patient       Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  caseNumber    String        @unique
+  status        String        @default("OPEN") // OPEN, MONITORING, CLOSED, REFERRED
+  riskLevel     RiskLevel     @default(UNKNOWN)
+  lesionType    LesionType    @default(UNKNOWN)
+  bodyLocation  BodyLocation?
+  firstNoticed  DateTime?
+  symptoms      String?
+  diagnosis     String?
+  treatmentPlan String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  images          ImageUpload[]
+  analysisResults AnalysisResult[]
+  appointments    Appointment[]
+  notes           CaseNote[]
+}
+
+model CaseNote {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  lesionCaseId String     @db.ObjectId
+  lesionCase   LesionCase @relation(fields: [lesionCaseId], references: [id], onDelete: Cascade)
+  userId       String     @db.ObjectId
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content      String
+  isPrivate    Boolean    @default(false) // If true, only visible to doctors
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Notification {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String           @db.ObjectId
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            NotificationType
+  title           String
+  message         String
+  isRead          Boolean          @default(false)
+  actionUrl       String?
+  senderId        String?    
+  data            Json? 
+  relatedEntityId String? // Could be appointment ID, result ID, etc.
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model UserSettings {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId               String   @unique @db.ObjectId
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  darkMode             Boolean  @default(false)
+  enableNotifications  Boolean  @default(true)
+  enableCameraAccess   Boolean  @default(true)
+  enableLocationAccess Boolean  @default(true)
+  language             String   @default("en")
+  sessionTimeout       Int      @default(30) // minutes
+  loginNotifications   Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model Message {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  senderId       String   @db.ObjectId
+  sender         User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId     String   @db.ObjectId
+  receiver       User     @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  content        String
+  isRead         Boolean  @default(false)
+  attachmentUrl  String?
+  attachmentType String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+enum VideoCallStatus {
+  CREATED
+  ACTIVE
+  ENDED
+}
+
+model VideoCallRoom {
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  roomId        String          @unique // Unique ZegoCloud room identifier
+  appointmentId String          @unique @db.ObjectId
+  appointment   Appointment     @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  hostId        String          @db.ObjectId // Doctor User ID
+  participantId String          @db.ObjectId // Patient User ID
+  status        VideoCallStatus @default(CREATED) // CREATED, ACTIVE, ENDED
+  startedAt     DateTime?
+  endedAt       DateTime?
+  duration      Int? // in seconds
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model Facility {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  facilityType String
+  address      String
+  city         String
+  state        String
+  zipCode      String
+  country      String
+  phoneNumber  String?
+  email        String?
+  website      String?
+  latitude     Float?
+  longitude    Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  doctors DoctorFacility[]
+}
+
+model DoctorFacility {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  doctorId   String    @db.ObjectId
+  doctor     Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  facilityId String    @db.ObjectId
+  facility   Facility  @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  isPrimary  Boolean   @default(false)
+  startDate  DateTime?
+  endDate    DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model AnalyticsData {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  date             DateTime
+  totalPatients    Int
+  newPatients      Int
+  totalScreenings  Int
+  highRiskCases    Int
+  mediumRiskCases  Int
+  lowRiskCases     Int
+  earlyDetections  Int
+  lateDetections   Int
+  avgDetectionTime Float // in days
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model ConnectionRequest {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  patientId       String           @db.ObjectId
+  patient         Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId        String           @db.ObjectId
+  doctor          Doctor           @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  status          ConnectionStatus @default(PENDING)
+  message         String?
+  responseMessage String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model PasswordReset {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @unique @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
