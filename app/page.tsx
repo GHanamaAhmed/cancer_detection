@@ -39,7 +39,7 @@ export default function LandingPage() {
               </svg>
             </div>
             <span className="text-xl font-bold text-blue-600">
-              SkinXpert AI
+              DermoXpert AI
             </span>
           </div>
           <nav className="hidden md:flex items-center gap-6">
@@ -77,7 +77,7 @@ export default function LandingPage() {
           <div className="container grid gap-6 md:grid-cols-2 lg:gap-12">
             <div className="flex flex-col justify-center space-y-4">
               <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
-                Get the best skin cancer detection at SkinXpert AI
+                Get the best skin cancer detection at DermoXpert AI
               </h1>
               <div className="mt-8">
                 <div className="flex items-center gap-4">
@@ -520,7 +520,7 @@ export default function LandingPage() {
         <section className="py-12 md:py-24">
           <div className="container">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold">How SkinXpert AI Works</h2>
+              <h2 className="text-3xl font-bold">How DermoXpert AI Works</h2>
               <p className="text-muted-foreground mt-2">
                 Get started with AI-powered skin analysis in just a few simple
                 steps
@@ -725,7 +725,7 @@ export default function LandingPage() {
               </h2>
               <p className="text-muted-foreground mt-2">
                 Real experiences from people who detected skin conditions early
-                with SkinXpert AI
+                with DermoXpert AI
               </p>
             </div>
 
@@ -754,7 +754,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <p className="italic">
-                  "SkinXpert AI detected an irregular mole that I hadn't
+                  "DermoXpert AI detected an irregular mole that I hadn't
                   noticed. The app connected me with a dermatologist who
                   confirmed it needed removal. Early detection made all the
                   difference. I'm so grateful for this technology!"
@@ -809,7 +809,7 @@ export default function LandingPage() {
                   Who are the dermatologists on the platform?
                 </h3>
                 <p className="text-muted-foreground">
-                  All dermatologists on SkinXpert AI are board-certified with
+                  All dermatologists on DermoXpert AI are board-certified with
                   specializations in skin cancer detection and treatment. We
                   verify credentials and experience before allowing doctors to
                   join our platform.
@@ -830,10 +830,10 @@ export default function LandingPage() {
 
               <div className="rounded-lg border p-6">
                 <h3 className="text-xl font-bold mb-2">
-                  Can I use SkinXpert AI for all skin conditions?
+                  Can I use DermoXpert AI for all skin conditions?
                 </h3>
                 <p className="text-muted-foreground">
-                  SkinXpert AI is primarily designed for skin cancer screening,
+                  DermoXpert AI is primarily designed for skin cancer screening,
                   focusing on melanoma and other skin cancers. While it may
                   detect other skin conditions, its primary purpose is early
                   skin cancer detection.
@@ -872,7 +872,7 @@ export default function LandingPage() {
         <section className="py-12 md:py-24 bg-muted">
           <div className="container text-center">
             <h2 className="text-3xl font-bold mb-4">
-              Download the SkinXpert AI app today and take control of your skin
+              Download the DermoXpert AI app today and take control of your skin
               health.
             </h2>
             <p className="text-muted-foreground mb-8">
@@ -910,7 +910,7 @@ export default function LandingPage() {
               </svg>
             </div>
             <span className="text-xl font-bold text-blue-600">
-              SkinXpert AI
+              DermoXpert AI
             </span>
           </div>
           <nav className="flex items-center gap-6">

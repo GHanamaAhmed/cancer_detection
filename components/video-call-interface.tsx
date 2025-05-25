@@ -32,12 +32,60 @@ import "@stream-io/video-react-sdk/dist/css/styles.css";
 interface VideoCallInterfaceProps {
   patientId: string;
   appointmentId: string;
-  patientName: string;
+  patientName?: string;
 }
 
 // Let's create a client reference outside the component to avoid recreating it
 let streamClient: StreamVideoClient | null = null;
 
+const CallUI = ({
+  patientName,
+  setCallEnding,
+}: {
+  call: Call;
+  patientName?: string;
+  setCallEnding: (ending: boolean) => void;
+  callEnding: boolean;
+}) => {
+  // Use the useCall hook to access call state and methods
+  const callObject = useCall();
+  const router = useRouter();
+  const handleEndCall = async () => {
+    if (callObject) {
+      try {
+        setCallEnding(true);
+        router.push("/dashboard/video?tab=active");
+      } catch (e) {
+        console.error("Error ending call:", e);
+        router.push("/dashboard/video?tab=active");
+      } finally {
+        setCallEnding(false);
+      }
+    }
+  };
+
+  return (
+    <div className="relative h-full w-full overflow-hidden">
+      {/* Display the video view */}
+      <SpeakerLayout />
+
+      {/* Custom header with patient info */}
+      <div className="absolute top-0 left-0 right-0 bg-black/70 p-1 z-10">
+        <div className="flex items-center gap-3">
+          <Avatar>
+            <AvatarFallback>{patientName?.substring(0, 2)}</AvatarFallback>
+          </Avatar>
+          <span className="text-white font-medium">{patientName}</span>
+        </div>
+      </div>
+
+      {/* Custom controls at the bottom */}
+      <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-1 z-10">
+        <CallControls onLeave={handleEndCall} />
+      </div>
+    </div>
+  );
+};
 export function VideoCallInterface({
   patientId,
   appointmentId,
@@ -56,64 +104,6 @@ export function VideoCallInterface({
   const session = useSession();
   const [appointmentDate, setAppointmentDate] = useState<Date | null>(null);
   const [isPastAppointment, setIsPastAppointment] = useState(false);
-
-  // Custom call UI component
-  const CallUI = ({ call }: { call: Call }) => {
-    // Use the useCall hook to access call state and methods
-    const callObject = useCall();
-
-    const handleEndCall = async () => {
-      if (callObject) {
-        try {
-          setCallEnding(true);
-          await callObject.leave();
-          router.push("/dashboard/video?tab=active");
-        } catch (e) {
-          console.error("Error ending call:", e);
-          router.push("/dashboard/video?tab=active");
-        } finally {
-          setCallEnding(false);
-        }
-      }
-    };
-
-    return (
-      <div className="relative h-full w-full overflow-hidden">
-        {/* Display the video view */}
-        <SpeakerLayout />
-
-        {/* Custom header with patient info */}
-        <div className="absolute top-0 left-0 right-0 bg-black/70 p-4 z-10">
-          <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarFallback>{patientName.substring(0, 2)}</AvatarFallback>
-            </Avatar>
-            <span className="text-white font-medium">{patientName}</span>
-            <div className="ml-auto">
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleEndCall}
-                disabled={callEnding}
-              >
-                {callEnding ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <PhoneOff className="h-4 w-4" />
-                )}
-                <span className="ml-2">End Call</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Custom controls at the bottom */}
-        <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-4 z-10">
-          <CallControls onLeave={handleEndCall} />
-        </div>
-      </div>
-    );
-  };
 
   // Helper function to update room status
   const updateRoomStatus = async (status: "ACTIVE") => {
@@ -307,13 +297,18 @@ export function VideoCallInterface({
   return (
     <div
       ref={containerRef}
-      className="relative h-[400px] rounded-lg overflow-hidden"
+      className="relative h-screen rounded-lg overflow-hidden"
     >
       <StreamVideo client={streamClient}>
         {/* Wrap CallUI with StreamCall */}
         <StreamCall call={call}>
           <StreamTheme>
-            <CallUI call={call} />
+            <CallUI
+              call={call}
+              patientName={patientName}
+              setCallEnding={setCallEnding}
+              callEnding={callEnding}
+            />
           </StreamTheme>
         </StreamCall>
       </StreamVideo>

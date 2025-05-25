@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     // Validate input
     if (!email || !password) {
       return NextResponse.json<ApiResponse<null>>(
-        {
+        { 
           success: false,
           error: "Email and password are required",
         },

@@ -104,7 +104,7 @@ export function DashboardNav() {
       >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-center py-4">
-            <h2 className="text-2xl font-bold text-blue-600">SkinXpert AI</h2>
+            <h2 className="text-2xl font-bold text-blue-600">DermoXpert AI</h2>
           </div>
           <div className="flex-1 space-y-1 py-4">
             {navItems.map((item) => (

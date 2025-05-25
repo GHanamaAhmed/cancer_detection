@@ -134,7 +134,7 @@ export function DashboardHeader() {
       <div className="flex items-center gap-2 font-semibold text-lg text-blue-600">
         {/* <img src="/logo-no-background-blue.svg" height={300} width={300} alt="" /> */}
         <Link href="/dashboard">
-          <span>SkinXpert AI</span>
+          <span>DermoXpert AI</span>
         </Link>
       </div>
 

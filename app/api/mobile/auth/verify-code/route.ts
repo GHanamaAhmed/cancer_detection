@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
         {
           success: false,
           error: "Email and code are required",
-        },
+        },  
         { status: 400 }
       );
     }
