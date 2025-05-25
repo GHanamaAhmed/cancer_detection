@@ -1,6 +1,5 @@
-import { gemini_2_5_pro_preview_05_06 } from "@/lib/googleStudioAI";
+import { gemini_2_5_flash_preview_05_20, gemini_2_5_pro_preview_05_06 } from "@/lib/googleStudioAI";
 import { Content } from "@google/genai";
-import { RiskLevel, LesionType } from "@prisma/client"; // Import enums from Prisma
 
 // Function to analyze the image with Gemini
 export async function analyzeImageWithGemini(
@@ -43,8 +42,9 @@ export async function analyzeImageWithGemini(
     ];
 
     // Call Gemini API
-    const analysisText = await gemini_2_5_pro_preview_05_06(prompt);
-
+    const analysisText = await gemini_2_5_flash_preview_05_20(prompt);
+    console.log("Gemini analysis response:", analysisText);
+    
     // Parse the response (assuming it returns properly formatted JSON)
     let analysisData;
     try {
@@ -86,8 +86,8 @@ export async function analyzeImageWithGemini(
 // Helper function to provide default values if AI analysis fails
 function defaultAnalysisResult() {
   return {
-    lesionType: "NEVUS" as LesionType,
-    riskLevel: "MEDIUM" as RiskLevel,
+    lesionType: "NEVUS" as string,
+    riskLevel: "MEDIUM" as string,
     confidence: 70,
     observations: "AI analysis unavailable. This is a default assessment.",
     recommendations: "Please consult with a doctor for proper evaluation.",
@@ -95,7 +95,7 @@ function defaultAnalysisResult() {
 }
 
 // Validate lesion type to ensure it matches your enum
-function validateLesionType(type: string): LesionType {
+function validateLesionType(type: string): string {
   const validTypes = [
     "NEVUS",
     "MELANOMA",
@@ -109,19 +109,19 @@ function validateLesionType(type: string): LesionType {
   const normalizedType = type?.toUpperCase().trim();
 
   return validTypes.includes(normalizedType)
-    ? (normalizedType as LesionType)
-    : ("OTHER" as LesionType);
+    ? (normalizedType as string)
+    : ("OTHER" as string);
 }
 
 // Validate risk level to ensure it matches your enum
-function validateRiskLevel(level: string): RiskLevel {
+function validateRiskLevel(level: string): string {
   const validLevels = ["LOW", "MEDIUM", "HIGH", "SEVERE"];
 
   const normalizedLevel = level?.toUpperCase().trim();
 
   return validLevels.includes(normalizedLevel)
-    ? (normalizedLevel as RiskLevel)
-    : ("MEDIUM" as RiskLevel);
+    ? (normalizedLevel as string)
+    : ("MEDIUM" as string);
 }
 
 async function imageUrlToBase64(url: string): Promise<string> {

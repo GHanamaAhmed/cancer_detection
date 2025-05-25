@@ -49,25 +49,6 @@ enum AppointmentType {
   SURGICAL_CONSULT
 }
 
-enum RiskLevel {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
-  UNKNOWN
-}
-
-enum LesionType {
-  MELANOMA
-  BASAL_CELL_CARCINOMA
-  SQUAMOUS_CELL_CARCINOMA
-  ACTINIC_KERATOSIS
-  NEVUS
-  SEBORRHEIC_KERATOSIS
-  OTHER
-  UNKNOWN
-}
-
 enum BodyLocation {
   HEAD
   NECK
@@ -342,9 +323,9 @@ model AnalysisResult {
   user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   imageId          String?      @db.ObjectId
   image            ImageUpload? @relation(fields: [imageId], references: [id], onDelete: SetNull)
-  riskLevel        RiskLevel
+  riskLevel        String // RiskLevel
   confidence       Float // 0-100
-  lesionType       LesionType   @default(UNKNOWN)
+  lesionType       String //LesionType   @default(UNKNOWN)
   observations     String?
   recommendations  String?
   reviewedByDoctor Boolean      @default(false)
@@ -384,7 +365,7 @@ model SimilarCase {
   caseNumber       String
   imageUrl         String
   diagnosis        String
-  riskLevel        RiskLevel
+  riskLevel        String //RiskLevel
   similarityScore  Float? // 0-100
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
@@ -396,8 +377,8 @@ model LesionCase {
   patient       Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
   caseNumber    String        @unique
   status        String        @default("OPEN") // OPEN, MONITORING, CLOSED, REFERRED
-  riskLevel     RiskLevel     @default(UNKNOWN)
-  lesionType    LesionType    @default(UNKNOWN)
+  riskLevel     String //RiskLevel     @default(UNKNOWN)
+  lesionType    String //LesionType    @default(UNKNOWN)
   bodyLocation  BodyLocation?
   firstNoticed  DateTime?
   symptoms      String?
@@ -433,8 +414,8 @@ model Notification {
   message         String
   isRead          Boolean          @default(false)
   actionUrl       String?
-  senderId        String?    
-  data            Json? 
+  senderId        String?
+  data            Json?
   relatedEntityId String? // Could be appointment ID, result ID, etc.
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -477,7 +458,7 @@ enum VideoCallStatus {
 
 model VideoCallRoom {
   id            String          @id @default(auto()) @map("_id") @db.ObjectId
-  roomId        String          @unique // Unique ZegoCloud room identifier
+  roomId        String          @unique 
   appointmentId String          @unique @db.ObjectId
   appointment   Appointment     @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
   hostId        String          @db.ObjectId // Doctor User ID

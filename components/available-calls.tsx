@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Calendar, Clock, Video } from "lucide-react";
+import EndCallButton from "./endCallButton";
 
 interface AvailableCallsProps {
   userId: string;
@@ -63,7 +64,7 @@ export async function AvailableCalls({ userId }: AvailableCallsProps) {
       <h3 className="text-lg font-medium dark:text-white">
         Available Video Consultations
       </h3>
-      
+
       <div className="grid gap-3">
         {confirmedCalls.map((call) => {
           // Generate patient name and initials
@@ -73,7 +74,7 @@ export async function AvailableCalls({ userId }: AvailableCallsProps) {
           const initials = `${firstName.charAt(0)}${
             lastName.charAt(0) || ""
           }`.toUpperCase();
-          
+
           // Check if appointment is today
           const callDate = new Date(call.date);
           const isToday = isDateToday(callDate);
@@ -94,7 +95,9 @@ export async function AvailableCalls({ userId }: AvailableCallsProps) {
                       }
                       alt={patientName}
                     />
-                    <AvatarFallback className="text-lg">{initials}</AvatarFallback>
+                    <AvatarFallback className="text-lg">
+                      {initials}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
                     <h4 className="font-semibold text-lg dark:text-white">
@@ -123,8 +126,8 @@ export async function AvailableCalls({ userId }: AvailableCallsProps) {
                     </div>
                   </div>
                 </div>
-                
-                <div>
+
+                <div className="flex flex-col gap-3 md:flex-row items-center">
                   <Button
                     asChild
                     size="default"
@@ -135,6 +138,7 @@ export async function AvailableCalls({ userId }: AvailableCallsProps) {
                       <span>Join Call</span>
                     </Link>
                   </Button>
+                  <EndCallButton appointmentId={call.id} />
                 </div>
               </div>
             </div>

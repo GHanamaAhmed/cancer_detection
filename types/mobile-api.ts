@@ -6,7 +6,7 @@
 //   ADMIN = "ADMIN",
 // }
 
-import { RiskLevel, UserRole } from "@prisma/client";
+import { UserRole } from "@prisma/client";
 
 export interface User {
   id: string;
@@ -204,7 +204,7 @@ export interface AnalysisResult {
   id: string;
   title: string;
   date: string;
-  riskLevel: RiskLevel;
+  riskLevel: string;
 }
 
 export interface ResultsListRequest {
@@ -229,7 +229,7 @@ export interface AnalysisResultSummary {
   id: string;
   title: string;
   date: string;
-  riskLevel: RiskLevel;
+  riskLevel: string;
   variant: "success" | "warning" | "destructive" | "default";
 }
 
@@ -237,7 +237,7 @@ export interface AnalysisResultDetail {
   id: string;
   title: string;
   date: string;
-  riskLevel: RiskLevel;
+  riskLevel: string;
   confidence: number;
   keyObservations: string[];
   recommendations: string;
@@ -274,7 +274,7 @@ export interface SimilarCase {
   caseNumber: string;
   imageUrl: string;
   diagnosis: string;
-  riskLevel: RiskLevel;
+  riskLevel: string;
 }
 
 // Doctor Types

@@ -3,19 +3,12 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth";
+import { AppointmentStatus } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
-interface AppointmentData {
-  doctorId: string;
-  userId: string;
-  date: string;
-  type: string;
-  reasonForVisit?: string;
-  location?: string;
-  duration: number;
-  lesionCaseId?: string;
-}
-
-export async function createAppointment(data: AppointmentData) {
+export async function createAppointment(
+  data: Prisma.AppointmentGetPayload<{}>
+) {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -97,9 +90,9 @@ export async function createAppointment(data: AppointmentData) {
           user.id === data.userId
             ? "A patient has requested an appointment"
             : "A doctor has scheduled an appointment for you",
-        type: "APPOINTMENT",
+        type: "APPOINTMENT_REMINDER",
         isRead: false,
-        relatedId: appointment.id,
+        relatedEntityId: appointment.id,
       },
     });
 
@@ -118,7 +111,7 @@ export async function createAppointment(data: AppointmentData) {
 
 export async function updateAppointmentStatus(
   appointmentId: string,
-  status: string
+  status: AppointmentStatus
 ) {
   try {
     const user = await getCurrentUser();
@@ -145,7 +138,17 @@ export async function updateAppointmentStatus(
       where: { id: appointmentId },
       data: { status },
     });
-
+    if (status === "CONFIRMED") {
+      await prisma.videoCallRoom.create({
+        data: {
+          appointmentId,
+          hostId: appointment.doctorId,
+          roomId: `room-${appointmentId}`,
+          status: "CREATED",
+          participantId: appointment.userId,
+        },
+      });
+    }
     // Determine which user to notify
     const recipientId =
       user.id === appointment.doctorId

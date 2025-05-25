@@ -67,7 +67,6 @@ export function VideoCallInterface({
         try {
           setCallEnding(true);
           await callObject.leave();
-          await updateRoomStatus("ENDED");
           router.push("/dashboard/video?tab=active");
         } catch (e) {
           console.error("Error ending call:", e);
@@ -117,7 +116,7 @@ export function VideoCallInterface({
   };
 
   // Helper function to update room status
-  const updateRoomStatus = async (status: "ACTIVE" | "ENDED") => {
+  const updateRoomStatus = async (status: "ACTIVE") => {
     if (!roomId) return;
 
     try {
@@ -256,9 +255,6 @@ export function VideoCallInterface({
     return () => {
       if (streamClient && call && callStarted) {
         try {
-          // Mark room as ended when leaving
-          updateRoomStatus("ENDED");
-
           // Leave the call
           call.leave().catch((e) => {
             console.error("Error leaving call during cleanup:", e);
