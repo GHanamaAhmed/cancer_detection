@@ -748,6 +748,7 @@ function PricingSection() {
                     <li key={f.key} className="flex items-center">
                       <svg
                         className={`w-5 h-5 ml-2 ${
+                          // @ts-ignore
                           plan.featureEnabled[f.key]
                             ? plan.popular
                               ? "text-white"
@@ -761,6 +762,7 @@ function PricingSection() {
                         viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg"
                       >
+                        {/*@ts-ignore*/}
                         {plan.featureEnabled[f.key] ? (
                           <path
                             strokeLinecap="round"
@@ -779,6 +781,7 @@ function PricingSection() {
                       </svg>
                       <span
                         className={`${
+                          // @ts-ignore
                           plan.featureEnabled[f.key]
                             ? ""
                             : plan.popular

@@ -65,7 +65,9 @@ export async function PUT(
         if (education && education.length > 0) {
           // First, keep track of which existing education entries to keep
           const existingEducationIds = education
+            // @ts-ignore
             .filter((edu) => !edu.id.toString().startsWith("temp-"))
+            // @ts-ignore
             .map((edu) => edu.id);
 
           // Delete education entries not in the updated list

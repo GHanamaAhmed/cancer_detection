@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth";
 import { AppointmentStatus } from "@prisma/client";
 import { Prisma } from "@prisma/client";
+import { pusher } from "@/lib/pusher";
 
 export async function createAppointment(
   data: Prisma.AppointmentGetPayload<{}>
@@ -82,7 +83,7 @@ export async function createAppointment(
     });
 
     // Create a notification for the doctor or patient
-    await prisma.notification.create({
+   const n= await prisma.notification.create({
       data: {
         userId: user.id === data.userId ? data.doctorId : data.userId,
         title: "New Appointment",
@@ -95,7 +96,11 @@ export async function createAppointment(
         relatedEntityId: appointment.id,
       },
     });
-
+    await pusher.trigger(
+      `private-notifications-${user.id === data.userId ? data.doctorId : data.userId}`,
+      "new-notification",
+      n
+    );
     revalidatePath("/dashboard/appointments");
 
     return {
@@ -156,7 +161,7 @@ export async function updateAppointmentStatus(
         : appointment.doctorId;
 
     // Create a notification
-    await prisma.notification.create({
+    const n = await prisma.notification.create({
       data: {
         userId: recipientId,
         title: "Appointment Update",
@@ -166,7 +171,11 @@ export async function updateAppointmentStatus(
         relatedEntityId: appointmentId,
       },
     });
-
+    await pusher.trigger(
+      `private-notifications-${recipientId}`,
+      "new-notification",
+      n
+    );
     revalidatePath("/dashboard/appointments");
     return { success: true };
   } catch (error) {

@@ -1,19 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/authOption";
 import { prisma } from "@/lib/db";
+import { verifyMobileAuth } from "@/lib/mobile-auth";
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session) {
+    const userId = await verifyMobileAuth(request);
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
     const notificationId = params.id;
 
     // Verify the notification belongs to the user
@@ -23,7 +22,7 @@ export async function PUT(
         userId,
       },
     });
-    
+
     if (!notification) {
       return NextResponse.json(
         { error: "Notification not found" },

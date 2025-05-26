@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/db";
 import { authOptions } from "../auth/[...nextauth]/authOption";
+import { pusher } from "@/lib/pusher";
 
 export async function GET(req: NextRequest) {
   try {
@@ -166,7 +167,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Create a notification for the doctor
-    await prisma.notification.create({
+    const n = await prisma.notification.create({
       data: {
         userId: doctorId,
         type: "CONNECTION_REQUEST",
@@ -175,7 +176,11 @@ export async function POST(req: NextRequest) {
         senderId: session.user.id,
       },
     });
-
+    await pusher.trigger(
+      `private-notifications-${doctorId}`,
+      "new-notification",
+      n
+    );
     return NextResponse.json(connectionRequest);
   } catch (error) {
     console.error("Error creating connection request:", error);

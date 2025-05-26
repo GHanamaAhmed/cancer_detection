@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/db";
 import { authOptions } from "../../auth/[...nextauth]/authOption";
+import { pusher } from "@/lib/pusher";
 
 export async function PATCH(
   req: NextRequest,
@@ -51,7 +52,7 @@ export async function PATCH(
     });
 
     // Create a notification for the patient
-    await prisma.notification.create({
+    const n = await prisma.notification.create({
       data: {
         userId: connectionRequest.patientId,
         type:
@@ -66,7 +67,11 @@ export async function PATCH(
             : `${session.user.name} has declined your connection request.`,
       },
     });
-
+    await pusher.trigger(
+      `private-notifications-${connectionRequest.patientId}`,
+      "new-notification",
+      n
+    );
     return NextResponse.json(updatedRequest);
   } catch (error) {
     console.error("Error updating connection request:", error);

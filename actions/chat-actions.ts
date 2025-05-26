@@ -34,7 +34,7 @@ export async function sendMessage(formData: FormData) {
   });
 
   // Create a notification
-  await prisma.notification.create({
+  const n = await prisma.notification.create({
     data: {
       userId: recipientId,
       type: "DOCTOR_MESSAGE",
@@ -44,8 +44,15 @@ export async function sendMessage(formData: FormData) {
       title: "New Message",
     },
   });
-}
 
+  await pusher.trigger(
+    `private-notifications-${recipientId}`,
+    "new-notification",
+    n
+  );
+
+  revalidatePath("/dashboard/chat");
+}
 export async function markMessagesAsRead(senderId: string) {
   const user = await requireAuth();
 

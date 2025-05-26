@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyMobileAuth } from "@/lib/mobile-auth";
+import { pusher } from "@/lib/pusher";
 
 export async function GET(
   req: NextRequest,
@@ -40,6 +41,8 @@ export async function GET(
             },
             doctor: {
               select: {
+                id: true,
+                userId: true,
                 specialties: true,
                 consultationFee: true,
                 facilities: {
@@ -85,7 +88,7 @@ export async function GET(
     const formattedAppointment = {
       id: appointment.id,
       doctor: {
-        id: appointment.doctorId,
+        id: appointment.doctor.doctor?.id,
         name: appointment.doctor.name,
         image:
           appointment.doctor.image || appointment.doctor.profile?.avatarUrl,
@@ -230,7 +233,7 @@ export async function PUT(
     if (status === "CANCELED" && appointment.status !== "CANCELED") {
       updateData.status = "CANCELED";
       if (appointment.status !== "CONFIRMED") {
-        await prisma.notification.create({
+        const n = await prisma.notification.create({
           data: {
             userId: appointment.doctorId,
             type: "APPOINTMENT_REMINDER",
@@ -242,6 +245,11 @@ export async function PUT(
             relatedEntityId: appointment.id,
           },
         });
+        await pusher.trigger(
+          `private-notifications-${appointment.doctorId}`,
+          "new-notification",
+          n
+        );
       }
     }
 
@@ -270,7 +278,7 @@ export async function PUT(
         notificationMessage = `Appointment details have been updated by the patient`;
       }
 
-      await prisma.notification.create({
+      const n = await prisma.notification.create({
         data: {
           userId: appointment.doctorId,
           type: "APPOINTMENT_REMINDER",
@@ -280,6 +288,11 @@ export async function PUT(
           relatedEntityId: appointment.id,
         },
       });
+      await pusher.trigger(
+        `private-notifications-${appointment.doctorId}`,
+        "new-notification",
+        n
+      );
     }
 
     return NextResponse.json({
@@ -343,7 +356,7 @@ export async function DELETE(
     });
 
     // Notify the doctor about the cancellation
-    await prisma.notification.create({
+    const n = await prisma.notification.create({
       data: {
         userId: appointment.doctorId,
         type: "APPOINTMENT_REMINDER",
@@ -355,6 +368,11 @@ export async function DELETE(
         relatedEntityId: appointment.id,
       },
     });
+    await pusher.trigger(
+      `private-notifications-${appointment.doctorId}`,
+      "new-notification",
+      n
+    );
 
     return NextResponse.json({
       success: true,

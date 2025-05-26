@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { verifyMobileAuth } from "@/lib/mobile-auth";
+import { pusher } from "@/lib/pusher";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -86,7 +87,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Create a notification for the doctor
-    await prisma.notification.create({
+    const n = await prisma.notification.create({
       data: {
         userId: doctor.userId,
         type: "CONNECTION_REQUEST",
@@ -96,6 +97,11 @@ export async function POST(req: NextRequest) {
         title: "New Connection Request",
       },
     });
+    await pusher.trigger(
+      `private-notifications-${doctor.userId}`,
+      "new-notification",
+      n
+    );
     return NextResponse.json(
       { success: true, data: connectionRequest },
       { status: 201 }

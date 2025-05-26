@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { pusherClient } from "@/lib/pusher-client";
 
 type Notification = {
   id: string;
@@ -76,6 +77,35 @@ export function DashboardHeader() {
 
     fetchNotifications();
   }, []);
+
+  // Set up Pusher for realtime notifications
+  useEffect(() => {
+    if (!session?.user?.id || !pusherClient) return;
+
+    const userId = session.user.id;
+    const channelName = `private-notifications-${userId}`;
+
+    const channel = pusherClient.subscribe(channelName);
+
+    channel.bind("new-notification", (notification: Notification) => {
+      console.log("Received new notification:", notification);
+      setNotifications((prev) => [notification, ...prev]);
+    });
+
+    channel.bind("notification-read", (data: { id: string }) => {
+      setNotifications((prev) =>
+        prev.map((notif) =>
+          notif.id === data.id ? { ...notif, isRead: true } : notif
+        )
+      );
+    });
+
+    return () => {
+      console.log("Unsubscribing from notifications channel");
+      channel.unbind_all();
+      pusherClient.unsubscribe(channelName);
+    };
+  }, [session?.user?.id, pusherClient]);
 
   // Handle search
   useEffect(() => {

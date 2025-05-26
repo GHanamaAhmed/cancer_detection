@@ -46,7 +46,7 @@ export default function ChatContent({
 
       setMessages((prevMessages) => [...prevMessages, message]);
     });
-    return () => {
+    return () => { 
       console.log("Unsubscribing from channel");
       channel.unbind_all();
       pusherClient.unsubscribe(channelName);

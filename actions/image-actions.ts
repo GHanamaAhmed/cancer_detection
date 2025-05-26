@@ -1,33 +1,34 @@
-"use server"
+"use server";
 
-import { prisma } from "@/lib/db"
-import { getCurrentUser } from "@/lib/auth"
-import { revalidatePath } from "next/cache"
-import { v4 as uuidv4 } from "uuid"
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
+import { v4 as uuidv4 } from "uuid";
+import { pusher } from "@/lib/pusher";
 
 // Mock function for image analysis (in a real app, this would call an AI service)
 async function analyzeImage(imageUrl: string, bodyLocation: string) {
   // Simulate API call delay
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Random risk level with weighted distribution
-  const riskLevels = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
-  const weights = [0.6, 0.25, 0.1, 0.05] // 60% low, 25% medium, 10% high, 5% critical
+  const riskLevels = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
+  const weights = [0.6, 0.25, 0.1, 0.05]; // 60% low, 25% medium, 10% high, 5% critical
 
-  const random = Math.random()
-  let cumulativeWeight = 0
-  let selectedRiskLevel = "LOW"
+  const random = Math.random();
+  let cumulativeWeight = 0;
+  let selectedRiskLevel = "LOW";
 
   for (let i = 0; i < weights.length; i++) {
-    cumulativeWeight += weights[i]
+    cumulativeWeight += weights[i];
     if (random <= cumulativeWeight) {
-      selectedRiskLevel = riskLevels[i]
-      break
+      selectedRiskLevel = riskLevels[i];
+      break;
     }
   }
 
   // Random confidence score between 70-99
-  const confidence = 70 + Math.floor(Math.random() * 30)
+  const confidence = 70 + Math.floor(Math.random() * 30);
 
   // Random lesion type
   const lesionTypes = [
@@ -37,32 +38,39 @@ async function analyzeImage(imageUrl: string, bodyLocation: string) {
     "ACTINIC_KERATOSIS",
     "NEVUS",
     "SEBORRHEIC_KERATOSIS",
-  ]
-  const lesionType = lesionTypes[Math.floor(Math.random() * lesionTypes.length)]
+  ];
+  const lesionType =
+    lesionTypes[Math.floor(Math.random() * lesionTypes.length)];
 
   // ABCDE criteria
-  const asymmetry = Math.random() > 0.5
-  const border = Math.random() > 0.5
-  const color = Math.random() > 0.5
-  const diameter = Math.random() > 0.5
-  const evolution = Math.random() > 0.5
+  const asymmetry = Math.random() > 0.5;
+  const border = Math.random() > 0.5;
+  const color = Math.random() > 0.5;
+  const diameter = Math.random() > 0.5;
+  const evolution = Math.random() > 0.5;
 
-  const totalFlags = [asymmetry, border, color, diameter, evolution].filter(Boolean).length
+  const totalFlags = [asymmetry, border, color, diameter, evolution].filter(
+    Boolean
+  ).length;
 
   return {
     riskLevel: selectedRiskLevel,
     confidence,
     lesionType,
-    observations: `AI analysis detected a potential ${lesionType.toLowerCase().replace(/_/g, " ")} with ${confidence}% confidence.`,
+    observations: `AI analysis detected a potential ${lesionType
+      .toLowerCase()
+      .replace(/_/g, " ")} with ${confidence}% confidence.`,
     recommendations:
       selectedRiskLevel === "LOW"
         ? "Regular monitoring recommended."
         : selectedRiskLevel === "MEDIUM"
-          ? "Follow-up examination recommended within 3 months."
-          : "Immediate dermatologist consultation recommended.",
+        ? "Follow-up examination recommended within 3 months."
+        : "Immediate dermatologist consultation recommended.",
     abcdeResults: {
       asymmetry,
-      asymmetryScore: asymmetry ? 0.3 + Math.random() * 0.7 : Math.random() * 0.3,
+      asymmetryScore: asymmetry
+        ? 0.3 + Math.random() * 0.7
+        : Math.random() * 0.3,
       border,
       borderScore: border ? 0.3 + Math.random() * 0.7 : Math.random() * 0.3,
       color,
@@ -72,31 +80,38 @@ async function analyzeImage(imageUrl: string, bodyLocation: string) {
       evolution,
       totalFlags,
     },
-  }
+  };
 }
 
 export async function uploadAndAnalyzeImage(formData: FormData) {
-  const user = await getCurrentUser()
+  const user = await getCurrentUser();
 
   if (!user) {
-    return { success: false, message: "Unauthorized" }
+    return { success: false, message: "Unauthorized" };
   }
 
   try {
     // In a real app, you would upload the image to a storage service
     // Here we'll simulate it with a placeholder URL
-    const imageFile = formData.get("image") as File
-    const bodyLocation = formData.get("bodyLocation") as string
-    const notes = formData.get("notes") as string
-    const patientId = formData.get("patientId") as string
+    const imageFile = formData.get("image") as File;
+    const bodyLocation = formData.get("bodyLocation") as string;
+    const notes = formData.get("notes") as string;
+    const patientId = formData.get("patientId") as string;
 
     if (!imageFile || !bodyLocation) {
-      return { success: false, message: "Image and body location are required" }
+      return {
+        success: false,
+        message: "Image and body location are required",
+      };
     }
 
     // Generate a unique image URL (in a real app, this would be the uploaded image URL)
-    const imageUrl = `/placeholder.svg?height=400&width=400&text=${encodeURIComponent(imageFile.name)}`
-    const thumbnailUrl = `/placeholder.svg?height=100&width=100&text=${encodeURIComponent(imageFile.name)}`
+    const imageUrl = `/placeholder.svg?height=400&width=400&text=${encodeURIComponent(
+      imageFile.name
+    )}`;
+    const thumbnailUrl = `/placeholder.svg?height=100&width=100&text=${encodeURIComponent(
+      imageFile.name
+    )}`;
 
     // Create image upload record
     const imageUpload = await prisma.imageUpload.create({
@@ -108,10 +123,10 @@ export async function uploadAndAnalyzeImage(formData: FormData) {
         notes,
         captureDate: new Date(),
       },
-    })
+    });
 
     // Analyze the image
-    const analysisResult = await analyzeImage(imageUrl, bodyLocation)
+    const analysisResult = await analyzeImage(imageUrl, bodyLocation);
 
     // Create analysis result record
     const analysis = await prisma.analysisResult.create({
@@ -139,19 +154,28 @@ export async function uploadAndAnalyzeImage(formData: FormData) {
           },
         },
       },
-    })
+    });
 
     // If this is a high risk result, create a notification
-    if (analysisResult.riskLevel === "HIGH" || analysisResult.riskLevel === "CRITICAL") {
-      await prisma.notification.create({
+    if (
+      analysisResult.riskLevel === "HIGH" ||
+      analysisResult.riskLevel === "CRITICAL"
+    ) {
+    const n=  await prisma.notification.create({
         data: {
           userId: user.id,
           type: "HIGH_RISK_ALERT",
           title: "High Risk Lesion Detected",
-          message: "A high risk lesion has been detected. Please consult with a dermatologist as soon as possible.",
+          message:
+            "A high risk lesion has been detected. Please consult with a dermatologist as soon as possible.",
           relatedEntityId: analysis.id,
         },
-      })
+      });
+      await pusher.trigger(
+        `private-notifications-${user.id}`,
+        "new-notification",
+        n
+      );
     }
 
     // Create or update lesion case if patient ID is provided
@@ -163,7 +187,7 @@ export async function uploadAndAnalyzeImage(formData: FormData) {
           bodyLocation: bodyLocation as any,
           status: "OPEN",
         },
-      })
+      });
 
       if (existingCase) {
         // Update existing case
@@ -180,18 +204,18 @@ export async function uploadAndAnalyzeImage(formData: FormData) {
               connect: { id: analysis.id },
             },
           },
-        })
+        });
 
         // Update image and analysis with case ID
         await prisma.imageUpload.update({
           where: { id: imageUpload.id },
           data: { lesionCaseId: existingCase.id },
-        })
+        });
 
         await prisma.analysisResult.update({
           where: { id: analysis.id },
           data: { lesionCaseId: existingCase.id },
-        })
+        });
       } else {
         // Create new case
         const newCase = await prisma.lesionCase.create({
@@ -211,22 +235,22 @@ export async function uploadAndAnalyzeImage(formData: FormData) {
               connect: { id: analysis.id },
             },
           },
-        })
+        });
 
         // Update image and analysis with case ID
         await prisma.imageUpload.update({
           where: { id: imageUpload.id },
           data: { lesionCaseId: newCase.id },
-        })
+        });
 
         await prisma.analysisResult.update({
           where: { id: analysis.id },
           data: { lesionCaseId: newCase.id },
-        })
+        });
       }
     }
 
-    revalidatePath("/dashboard/patients")
+    revalidatePath("/dashboard/patients");
 
     return {
       success: true,
@@ -234,31 +258,35 @@ export async function uploadAndAnalyzeImage(formData: FormData) {
       imageId: imageUpload.id,
       analysisId: analysis.id,
       riskLevel: analysisResult.riskLevel,
-    }
+    };
   } catch (error) {
-    console.error("Error uploading and analyzing image:", error)
+    console.error("Error uploading and analyzing image:", error);
     return {
       success: false,
       message: "Something went wrong",
-    }
+    };
   }
 }
 
-export async function reviewAnalysisResult(analysisId: string, doctorNotes: string, doctorDiagnosis?: string) {
-  const user = await getCurrentUser()
+export async function reviewAnalysisResult(
+  analysisId: string,
+  doctorNotes: string,
+  doctorDiagnosis?: string
+) {
+  const user = await getCurrentUser();
 
   if (!user || user.role !== "DOCTOR") {
-    return { success: false, message: "Unauthorized" }
+    return { success: false, message: "Unauthorized" };
   }
 
   try {
     const analysis = await prisma.analysisResult.findUnique({
       where: { id: analysisId },
       include: { lesionCase: true },
-    })
+    });
 
     if (!analysis) {
-      return { success: false, message: "Analysis result not found" }
+      return { success: false, message: "Analysis result not found" };
     }
 
     // Update analysis result
@@ -268,7 +296,7 @@ export async function reviewAnalysisResult(analysisId: string, doctorNotes: stri
         reviewedByDoctor: true,
         doctorNotes,
       },
-    })
+    });
 
     // If there's a lesion case, update it with the diagnosis
     if (analysis.lesionCaseId && doctorDiagnosis) {
@@ -277,12 +305,12 @@ export async function reviewAnalysisResult(analysisId: string, doctorNotes: stri
         data: {
           diagnosis: doctorDiagnosis,
         },
-      })
+      });
     }
 
     // Create notification for the patient
     if (analysis.lesionCase) {
-      await prisma.notification.create({
+      const n = await prisma.notification.create({
         data: {
           userId: analysis.lesionCase.patientId,
           type: "RESULT_AVAILABLE",
@@ -290,20 +318,25 @@ export async function reviewAnalysisResult(analysisId: string, doctorNotes: stri
           message: "Your skin lesion analysis has been reviewed by a doctor.",
           relatedEntityId: analysisId,
         },
-      })
+      });
+      await pusher.trigger(
+        `private-notifications-${analysis.lesionCase.patientId}`,
+        "new-notification",
+        n
+      );
     }
 
-    revalidatePath("/dashboard/patients")
+    revalidatePath("/dashboard/patients");
 
     return {
       success: true,
       message: "Analysis result reviewed successfully",
-    }
+    };
   } catch (error) {
-    console.error("Error reviewing analysis result:", error)
+    console.error("Error reviewing analysis result:", error);
     return {
       success: false,
       message: "Something went wrong",
-    }
+    };
   }
 }

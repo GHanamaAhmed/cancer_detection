@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
       },
     });
     // Create a notification for the doctor
-    await prisma.notification.create({
+   const n= await prisma.notification.create({
       data: {
         userId: receiverId,
         type: "DOCTOR_MESSAGE",
@@ -132,7 +132,11 @@ export async function POST(request: NextRequest) {
         title: "New Message",
       },
     });
-
+    await pusher.trigger(
+      `private-notifications-${receiverId}`,
+      "new-notification",
+      n
+    );
     return NextResponse.json({ success: true, data: message });
   } catch (error) {
     console.error("Error sending message:", error);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyMobileAuth } from "@/lib/mobile-auth";
+import { pusher } from "@/lib/pusher";
 
 export async function POST(req: NextRequest) {
   try {
@@ -106,7 +107,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Create notification for the doctor
-    await prisma.notification.create({
+    const n = await prisma.notification.create({
       data: {
         userId: doctorId,
         type: "CONNECTION_REQUEST",
@@ -117,7 +118,12 @@ export async function POST(req: NextRequest) {
         senderId: userId,
       },
     });
-
+    // Trigger Pusher notification
+    await pusher.trigger(
+      `private-notifications-${doctorId}`,
+      "new-notification",
+      n
+    );
     return NextResponse.json({
       success: true,
       data: appointment,
@@ -226,6 +232,5 @@ export async function GET(req: NextRequest) {
       { error: error.message || "Failed to fetch appointments" },
       { status: 500 }
     );
-  } 
+  }
 }
-  
