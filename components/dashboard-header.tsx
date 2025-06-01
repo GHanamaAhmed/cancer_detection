@@ -172,9 +172,9 @@ export function DashboardHeader() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
+              <Bell className="h-5 w-5 flex justify-center items-center" />
               {unreadCount > 0 && (
-                <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs">
+                <Badge className="absolute -right-1 -top-1 h-5 w-5 flex justify-center items-center rounded-full p-0 text-xs">
                   {unreadCount}
                 </Badge>
               )}

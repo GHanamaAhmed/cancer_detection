@@ -1,11 +1,15 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StarIcon } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useTheme } from "next-themes";
 
 export default function LandingPage() {
+  const { theme } = useTheme();
+
   return (
     <div className="flex min-h-screen flex-col" dir="rtl">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -25,28 +29,10 @@ export default function LandingPage() {
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <Link
-              href="#"
+              href="/dashboard"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
             >
-              من نحن
-            </Link>
-            <Link
-              href="#"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              كيف يعمل
-            </Link>
-            <Link
-              href="#"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              الأطباء
-            </Link>
-            <Link
-              href="#"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              اتصل بنا
+              لوحة التحكم
             </Link>
             <ThemeToggle />
           </nav>
@@ -54,11 +40,11 @@ export default function LandingPage() {
       </header>
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-muted py-12 md:py-24">
+        <section className="bg-muted/50 py-12 md:py-24">
           <div className="container grid gap-6 md:grid-cols-2 lg:gap-12">
             <div className="flex flex-col justify-center space-y-4">
               <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
-                احصل على أفضل كشف لسرطان الجلد مع DermoXpert AI
+                احصل على أفضل كشف لامراض الجلد مع DermoXpert AI
               </h1>
               <div className="mt-8">
                 <div className="flex items-center gap-4">
@@ -69,32 +55,6 @@ export default function LandingPage() {
                       الجلد.
                     </p>
                   </div>
-                  {/* <div className="flex -space-x-2">
-                    <Avatar className="border-2 border-background">
-                      <AvatarImage
-                        src="/placeholder.svg?height=32&width=32"
-                        alt="مريض"
-                      />
-                      <AvatarFallback>م1</AvatarFallback>
-                    </Avatar>
-                    <Avatar className="border-2 border-background">
-                      <AvatarImage
-                        src="/placeholder.svg?height=32&width=32"
-                        alt="مريض"
-                      />
-                      <AvatarFallback>م2</AvatarFallback>
-                    </Avatar>
-                    <Avatar className="border-2 border-background">
-                      <AvatarImage
-                        src="/placeholder.svg?height=32&width=32"
-                        alt="مريض"
-                      />
-                      <AvatarFallback>م3</AvatarFallback>
-                    </Avatar>
-                    <Avatar className="border-2 border-background bg-blue-600 text-white">
-                      <AvatarFallback>+</AvatarFallback>
-                    </Avatar>
-                  </div> */}
                 </div>
                 <div className="mt-4">
                   <h3 className="font-semibold">مرضانا</h3>
@@ -113,15 +73,16 @@ export default function LandingPage() {
                   <Button className="bg-blue-600 hover:bg-blue-700">
                     سجل الآن
                   </Button>
-                  <Button variant="outline">اعرف المزيد</Button>
                 </div>
               </div>
             </div>
             <div className="flex items-center justify-center">
               <div className="relative w-[280px] h-[560px]">
                 <Image
-                  src="/gr/photo_1_2025-05-24_16-22-23.jpg"
-                  alt="تطبيق الهاتف المحمول"
+                  src={
+                    theme === "dark" ? "/gr/en_dark.png" : "/gr/en_light.png"
+                  }
+                  alt="Mobile Application"
                   width={280}
                   height={560}
                   className="object-cover"
@@ -183,11 +144,6 @@ export default function LandingPage() {
                   />
                 </div>
               </div>
-            </div>
-            <div className="mt-8 text-left">
-              <Button variant="link" className="text-blue-600">
-                اعرف المزيد
-              </Button>
             </div>
           </div>
         </section>
@@ -290,23 +246,22 @@ export default function LandingPage() {
             </p>
 
             <div className="grid gap-6 md:grid-cols-2 lg:gap-12">
-              <div className="rounded-lg bg-muted p-6">
+              <div className="rounded-lg bg-muted p-6 flex flex-col aspect-[19/15]">
                 <h3 className="text-xl font-bold mb-4">تحليل الصور المتقدم</h3>
                 <p className="text-muted-foreground mb-6">
                   تحلل تقنية الذكاء الاصطناعي صور الجلد باستخدام طريقة ABCDE
                   لاكتشاف علامات الإنذار المحتملة للميلانوما.
                 </p>
-                <div className="flex justify-center">
+                <div className="relative h-full">
                   <Image
-                    src="/placeholder.svg?height=240&width=160"
+                    src="/gr/Dermatologist-online-consultation.jpg"
                     alt="تحليل الصور"
-                    width={160}
-                    height={240}
+                    fill
                     className="rounded-lg object-cover"
                   />
                 </div>
               </div>
-              <div className="rounded-lg bg-muted p-6">
+              <div className="rounded-lg bg-muted p-6  flex flex-col aspect-[19/15]">
                 <h3 className="text-xl font-bold mb-4">
                   استشارات أطباء الجلدية
                 </h3>
@@ -314,211 +269,44 @@ export default function LandingPage() {
                   تواصل مع أطباء الجلدية المعتمدين من خلال مكالمات نصية أو مرئية
                   للتشخيص المهني وخطط العلاج.
                 </p>
-                <div className="flex justify-center">
+                <div className="relative h-full">
                   <Image
-                    src="/placeholder.svg?height=240&width=160"
-                    alt="استشارة طبيب"
-                    width={160}
-                    height={240}
+                    src="https://img.freepik.com/free-photo/doctor-nurses-special-equipment_23-2148980721.jpg?t=st=1748754535~exp=1748758135~hmac=814818f45a84e6240ee2d560b900d5fdd37f7d721d812ea6bb10bde6fe7bd0fa&w=826"
+                    alt="تحليل الصور"
+                    fill
                     className="rounded-lg object-cover"
                   />
                 </div>
               </div>
-              <div className="rounded-lg bg-muted p-6">
+              <div className="rounded-lg bg-muted p-6 flex flex-col aspect-[19/15]">
                 <h3 className="text-xl font-bold mb-4">تتبع صحة الجلد</h3>
                 <p className="text-muted-foreground mb-6">
                   راقب التغييرات في جلدك مع مرور الوقت مع التتبع الزمني لجميع
                   الفحوصات وتقييمات المخاطر.
                 </p>
-                <div className="flex justify-center">
+                <div className="relative h-full">
                   <Image
-                    src="/placeholder.svg?height=240&width=160"
-                    alt="تتبع الصحة"
-                    width={160}
-                    height={240}
+                    src="https://img.freepik.com/free-photo/doctor-with-stethoscope-hands-hospital-background_1423-1.jpg?t=st=1748754988~exp=1748758588~hmac=1fcd188b288f653bce4d5166c5c6eb907db01405b8a2e2cfc3fde63ce82bdd58&w=826"
+                    alt="تحليل الصور"
+                    fill
                     className="rounded-lg object-cover"
                   />
                 </div>
               </div>
-              <div className="rounded-lg bg-muted p-6">
+              <div className="rounded-lg bg-muted p-6 flex flex-col aspect-[19/15]">
                 <h3 className="text-xl font-bold mb-4">إدارة المواعيد</h3>
                 <p className="text-muted-foreground mb-6">
                   احجز مواعيد شخصية أو افتراضية مع أطباء الجلدية واحصل على
                   تذكيرات لفحوصات المتابعة.
                 </p>
-                <div className="flex justify-center">
+                <div className="relative h-full">
                   <Image
-                    src="/placeholder.svg?height=240&width=160"
+                    src="https://img.freepik.com/free-photo/medical-banner-with-doctor-patient_23-2149611238.jpg?t=st=1748755170~exp=1748758770~hmac=c66e59390d7323f5455a57ff6881be99431c0ce1c2235a9c606548fcb0827edf&w=826"
                     alt="إدارة المواعيد"
-                    width={160}
-                    height={240}
+                    fill
                     className="rounded-lg object-cover"
                   />
                 </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Partners Section */}
-        <section className="py-12 md:py-16 bg-muted/50">
-          <div className="container">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold">
-                موثوق من قبل مقدمي الرعاية الصحية الرائدين
-              </h2>
-            </div>
-
-            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
-              {[1, 2, 3, 4, 5].map((partner) => (
-                <div
-                  key={partner}
-                  className="grayscale hover:grayscale-0 transition-all"
-                >
-                  <Image
-                    src={`/placeholder.svg?height=60&width=120&text=Partner${partner}`}
-                    alt={`شريك الرعاية الصحية ${partner}`}
-                    width={120}
-                    height={60}
-                    className="object-contain"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials */}
-        <section className="py-12 md:py-24 bg-muted">
-          <div className="container">
-            <div className="mb-8">
-              <span className="text-sm font-medium text-blue-600">
-                قصص النجاح
-              </span>
-              <h2 className="text-3xl font-bold mt-2">ماذا يقول مرضانا عنا</h2>
-              <p className="text-muted-foreground mt-2">
-                تجارب حقيقية من أشخاص اكتشفوا أمراض الجلد مبكراً مع DermoXpert
-                AI
-              </p>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2 lg:gap-12">
-              <div className="rounded-lg border bg-card text-card-foreground shadow p-6">
-                <div className="flex justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Avatar>
-                      <AvatarImage
-                        src="/placeholder.svg?height=40&width=40"
-                        alt="مريض"
-                      />
-                      <AvatarFallback>ك م</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-semibold">كريستينا كيم</p>
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <StarIcon
-                            key={star}
-                            className="h-4 w-4 fill-yellow-400 text-yellow-400"
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <p className="italic">
-                  "اكتشف DermoXpert AI شامة غير منتظمة لم ألاحظها. ربطني التطبيق
-                  بطبيب جلدية أكد أنها تحتاج إلى إزالة. الكشف المبكر أحدث كل
-                  الفرق. أنا ممتنة جداً لهذه التقنية!"
-                </p>
-              </div>
-              <div className="flex items-center justify-center">
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  عرض المزيد
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ Section */}
-        <section className="py-12 md:py-24">
-          <div className="container">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold">الأسئلة الشائعة</h2>
-              <p className="text-muted-foreground mt-2">
-                اعثر على إجابات للأسئلة الشائعة حول خدماتنا
-              </p>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2 lg:gap-8">
-              <div className="rounded-lg border p-6">
-                <h3 className="text-xl font-bold mb-2">
-                  ما مدى دقة تحليل الذكاء الاصطناعي؟
-                </h3>
-                <p className="text-muted-foreground">
-                  تم تدريب الذكاء الاصطناعي لدينا على أكثر من 100,000 صورة تم
-                  التحقق منها من قبل أطباء الجلدية ويحقق معدل دقة 95% في اكتشاف
-                  مؤشرات سرطان الجلد المحتملة. ومع ذلك، فهو مصمم كأداة فحص وليس
-                  بديلاً للتشخيص الطبي المهني.
-                </p>
-              </div>
-
-              <div className="rounded-lg border p-6">
-                <h3 className="text-xl font-bold mb-2">
-                  كيف ألتقط أفضل صورة للتحليل؟
-                </h3>
-                <p className="text-muted-foreground">
-                  استخدم إضاءة جيدة، حافظ على ثبات الكاميرا، تأكد من أن مشكلة
-                  الجلد في البؤرة، وأدرج كائناً مألوفاً كمرجع للحجم. يوفر
-                  تطبيقنا إرشادات في الوقت الفعلي لمساعدتك في التقاط أفضل صورة
-                  ممكنة للتحليل.
-                </p>
-              </div>
-
-              <div className="rounded-lg border p-6">
-                <h3 className="text-xl font-bold mb-2">
-                  من هم أطباء الجلدية على المنصة؟
-                </h3>
-                <p className="text-muted-foreground">
-                  جميع أطباء الجلدية على DermoXpert AI معتمدون من المجلس مع
-                  تخصصات في اكتشاف وعلاج سرطان الجلد. نتحقق من الأوراق الاعتماد
-                  والخبرة قبل السماح للأطباء بالانضمام إلى منصتنا.
-                </p>
-              </div>
-
-              <div className="rounded-lg border p-6">
-                <h3 className="text-xl font-bold mb-2">
-                  هل بياناتي الطبية آمنة؟
-                </h3>
-                <p className="text-muted-foreground">
-                  نعم، نستخدم التشفير من طرف إلى طرف ونلتزم بجميع لوائح خصوصية
-                  الرعاية الصحية. يتم تخزين بياناتك بأمان ولا يمكن الوصول إليها
-                  إلا من قبلك ومقدمي الرعاية الصحية الذين تخولهم صراحة.
-                </p>
-              </div>
-
-              <div className="rounded-lg border p-6">
-                <h3 className="text-xl font-bold mb-2">
-                  هل يمكنني استخدام DermoXpert AI لجميع أمراض الجلد؟
-                </h3>
-                <p className="text-muted-foreground">
-                  DermoXpert AI مصمم أساساً لفحص سرطان الجلد، مع التركيز على
-                  الميلانوما وسرطانات الجلد الأخرى. بينما قد يكتشف أمراض جلد
-                  أخرى، فإن غرضه الأساسي هو الكشف المبكر لسرطان الجلد.
-                </p>
-              </div>
-
-              <div className="rounded-lg border p-6">
-                <h3 className="text-xl font-bold mb-2">
-                  كم سرعة التواصل مع طبيب جلدية؟
-                </h3>
-                <p className="text-muted-foreground">
-                  يمكن لمعظم المرضى جدولة استشارات نصية في نفس اليوم. بالنسبة
-                  للاستشارات المرئية، تعتمد التوفر على جدول طبيب الجلدية، لكن
-                  الحالات العاجلة تحصل على أولوية بناءً على تقييم مخاطر الذكاء
-                  الاصطناعي.
-                </p>
               </div>
             </div>
           </div>
@@ -581,32 +369,9 @@ export default function LandingPage() {
               DermoXpert AI
             </span>
           </div>
-          <nav className="flex items-center gap-6">
-            <Link
-              href="#"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              من نحن
-            </Link>
-            <Link
-              href="#"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              كيف يعمل
-            </Link>
-            <Link
-              href="#"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              الأطباء
-            </Link>
-            <Link
-              href="#"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              اتصل بنا
-            </Link>
-          </nav>
+          <div>
+            <p>© 2025 DermoXpert AI. جميع الحقوق محفوظة.</p>
+          </div>
         </div>
       </footer>
     </div>

@@ -1,85 +1,92 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Facebook, Lock, Mail, User } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Checkbox } from "@/components/ui/checkbox"
-import { toast } from "@/components/ui/use-toast"
+import type React from "react";
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Facebook, Lock, Mail, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "@/components/ui/use-toast";
 
 export function LoginForm() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [activeTab, setActiveTab] = useState("login")
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+  const [showPassword, setShowPassword] = useState(false);
+  const [activeTab, setActiveTab] = useState("login");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
-  })
+  });
 
   const [registerData, setRegisterData] = useState({
     fullName: "",
     email: "",
     password: "",
-  })
+  });
 
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLoginData({
       ...loginData,
       [e.target.id]: e.target.value,
-    })
-  }
+    });
+  };
 
   const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setRegisterData({
       ...registerData,
       [e.target.id.replace("register-", "")]: e.target.value,
-    })
-  }
+    });
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
     try {
       const result = await signIn("credentials", {
         redirect: false,
         email: loginData.email,
         password: loginData.password,
-      })
+      });
 
       if (result?.error) {
         toast({
           title: "Error",
           description: "Invalid email or password",
           variant: "destructive",
-        })
+        });
       } else {
-        router.push("/dashboard")
-        router.refresh()
+        router.push("/dashboard");
+        router.refresh();
       }
     } catch (error) {
-      console.error("Login error:", error)
+      console.error("Login error:", error);
       toast({
         title: "Error",
         description: "Something went wrong. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
     try {
       const response = await fetch("/api/auth/register", {
@@ -93,44 +100,55 @@ export function LoginForm() {
           password: registerData.password,
           role: "DOCTOR", // Default role for new registrations
         }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Registration failed")
+        throw new Error(data.message || "Registration failed");
       }
 
       toast({
         title: "Success",
         description: "Account created successfully. Please log in.",
-      })
+      });
 
-      setActiveTab("login")
+      setActiveTab("login");
     } catch (error: any) {
-      console.error("Registration error:", error)
+      console.error("Registration error:", error);
       toast({
         title: "Error",
         description: error.message || "Registration failed. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleGoogleLogin = () => {
-    signIn("google", { callbackUrl: "/dashboard" })
-  }
+    signIn("google", {
+      redirect: true,
+      callbackUrl: "/dashboard",
+    });
+  };
 
   return (
     <Card className="w-full max-w-md shadow-lg">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center text-blue-600">Skin Cancer Detection Platform</CardTitle>
-        <CardDescription className="text-center">Sign in to access your dermatology portal</CardDescription>
+        <CardTitle className="text-2xl font-bold text-center text-blue-600">
+          Skin Cancer Detection Platform
+        </CardTitle>
+        <CardDescription className="text-center">
+          Sign in to access your dermatology portal
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
+        {/* <Tabs
+          defaultValue="login"
+          value={activeTab}
+          onValueChange={setActiveTab}
+        >
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="login">Login</TabsTrigger>
             <TabsTrigger value="register">Register</TabsTrigger>
@@ -157,7 +175,10 @@ export function LoginForm() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
-                    <a href="#" className="text-xs text-blue-600 hover:underline">
+                    <a
+                      href="#"
+                      className="text-xs text-blue-600 hover:underline"
+                    >
                       Forgot Password?
                     </a>
                   </div>
@@ -176,7 +197,11 @@ export function LoginForm() {
                       className="absolute right-3 top-3 text-gray-400"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -186,7 +211,11 @@ export function LoginForm() {
                     Remember me
                   </Label>
                 </div>
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={isLoading}
+                >
                   {isLoading ? "Signing In..." : "Sign In"}
                 </Button>
               </div>
@@ -242,7 +271,11 @@ export function LoginForm() {
                       className="absolute right-3 top-3 text-gray-400"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -255,25 +288,36 @@ export function LoginForm() {
                     </a>
                   </Label>
                 </div>
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={isLoading}
+                >
                   {isLoading ? "Creating Account..." : "Create Account"}
                 </Button>
               </div>
             </form>
           </TabsContent>
-        </Tabs>
+        </Tabs> */}
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-200"></div>
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-gray-500">Or continue with</span>
+            <span className="bg-white px-2 text-gray-500">
+              Or continue with
+            </span>
           </div>
         </div>
 
         <div className="flex gap-2">
-          <Button variant="outline" className="w-full" onClick={handleGoogleLogin} type="button">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleGoogleLogin}
+            type="button"
+          >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -295,10 +339,6 @@ export function LoginForm() {
             </svg>
             Google
           </Button>
-          <Button variant="outline" className="w-full" type="button">
-            <Facebook className="mr-2 h-4 w-4 text-blue-600" />
-            Facebook
-          </Button>
         </div>
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
@@ -313,5 +353,5 @@ export function LoginForm() {
         </div>
       </CardFooter>
     </Card>
-  )
+  );
 }
