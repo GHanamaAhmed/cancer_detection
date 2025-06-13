@@ -9,6 +9,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  
   const session = await getSession();
   const user = await prisma.user.findUnique({
     where: { id: session?.user.id },
