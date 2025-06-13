@@ -193,7 +193,6 @@ export default function LandingPage() {
               <div className="text-center">
                 <div className="relative mx-auto w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold mb-4">
                   1
-                  <div className="absolute w-12 h-1 bg-blue-600 right-0 top-1/2 translate-x-full hidden md:block"></div>{" "}
                   {/* Changed left to right and -translate-x-full to translate-x-full */}
                 </div>
                 <h3 className="text-xl font-bold mb-2">Take a Photo</h3>
@@ -205,7 +204,6 @@ export default function LandingPage() {
               <div className="text-center">
                 <div className="relative mx-auto w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold mb-4">
                   2
-                  <div className="absolute w-12 h-1 bg-blue-600 right-0 top-1/2 translate-x-full hidden md:block"></div>{" "}
                   {/* Changed left to right and -translate-x-full to translate-x-full */}
                 </div>
                 <h3 className="text-xl font-bold mb-2">AI Analysis</h3>
@@ -217,7 +215,6 @@ export default function LandingPage() {
               <div className="text-center">
                 <div className="relative mx-auto w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold mb-4">
                   3
-                  <div className="absolute w-12 h-1 bg-blue-600 right-0 top-1/2 translate-x-full hidden md:block"></div>{" "}
                   {/* Changed left to right and -translate-x-full to translate-x-full */}
                 </div>
                 <h3 className="text-xl font-bold mb-2">Get Results</h3>
