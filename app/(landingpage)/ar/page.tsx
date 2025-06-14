@@ -6,9 +6,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StarIcon } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useTheme } from "next-themes";
+import { signIn, useSession } from "next-auth/react";
 
 export default function LandingPage() {
   const { theme } = useTheme();
+  const sessoin = useSession();
 
   return (
     <div className="flex min-h-screen flex-col" dir="rtl">
@@ -28,12 +30,23 @@ export default function LandingPage() {
             </span>
           </div>
           <nav className="hidden md:flex items-center gap-6">
-            <Link
-              href="/dashboard"
+            <button
+              onClick={() => {
+                if (sessoin.status === "unauthenticated") {
+                  signIn("google", {
+                    redirect: true,
+                    callbackUrl: "/dashboard",
+                  });
+                } else {
+                  window.location.href = "/dashboard";
+                }
+              }}
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
             >
-              لوحة التحكم
-            </Link>
+              {sessoin.status === "authenticated"
+                ? "لوحة التحكم"
+                : "تسجيل الدخول"}
+            </button>
             <ThemeToggle />
           </nav>
         </div>

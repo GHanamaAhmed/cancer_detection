@@ -121,12 +121,16 @@ export async function POST(request: NextRequest) {
         content,
       },
     });
+    const sender = await prisma.user.findUnique({
+      where: { id: senderId },
+      select: { name: true },
+    });
     // Create a notification for the doctor
-   const n= await prisma.notification.create({
+    const n = await prisma.notification.create({
       data: {
         userId: receiverId,
         type: "DOCTOR_MESSAGE",
-        message: `New message from ${senderId}`,
+        message: `New message from ${sender?.name}`,
         isRead: false,
         senderId,
         title: "New Message",

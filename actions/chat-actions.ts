@@ -38,7 +38,7 @@ export async function sendMessage(formData: FormData) {
     data: {
       userId: recipientId,
       type: "DOCTOR_MESSAGE",
-      message: `New message from ${user.email}`,
+      message: `New message from ${user.name}`,
       isRead: false,
       senderId: user.id,
       title: "New Message",

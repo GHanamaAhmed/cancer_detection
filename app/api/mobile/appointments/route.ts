@@ -105,14 +105,17 @@ export async function POST(req: NextRequest) {
         lesionCaseId,
       },
     });
-
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
     // Create notification for the doctor
     const n = await prisma.notification.create({
       data: {
         userId: doctorId,
         type: "CONNECTION_REQUEST",
         title: "New Appointment Request",
-        message: `You have a new appointment request from ${userId}`,
+        message: `You have a new appointment request from ${user?.name}`,
         actionUrl: `/appointments/${appointment.id}`,
         relatedEntityId: appointment.id,
         senderId: userId,

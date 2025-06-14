@@ -7,7 +7,7 @@ export default withAuth(
     console.log("token:",req.nextauth.token);
 
     // Exclude NextAuth API routes entirely
-    if (req.nextUrl.pathname.startsWith("/api/auth")) {
+    if (req.nextUrl.pathname.startsWith("/")) {
       return NextResponse.next();
     }
 

@@ -89,8 +89,8 @@ export async function createAppointment(
         title: "New Appointment",
         message:
           user.id === data.userId
-            ? "A patient has requested an appointment"
-            : "A doctor has scheduled an appointment for you",
+            ? `You have a new appointment scheduled with ${user.name}`
+            : `You have a new appointment request from ${user.name}`,
         type: "APPOINTMENT_REMINDER",
         isRead: false,
         relatedEntityId: appointment.id,
@@ -165,7 +165,7 @@ export async function updateAppointmentStatus(
       data: {
         userId: recipientId,
         title: "Appointment Update",
-        message: `Your appointment has been ${status.toLowerCase()}`,
+        message: `Your appointment has been ${status.toLowerCase()}.`,
         type: "APPOINTMENT_REMINDER",
         isRead: false,
         relatedEntityId: appointmentId,

@@ -190,7 +190,7 @@ export function DashboardHeader() {
               >
                 <span className="flex items-center">
                   <UserPlus className="h-3.5 w-3.5 mr-1" />
-                  Connection Requests (3)
+                  Connection Requests
                 </span>
               </Link>
             </DropdownMenuLabel>

@@ -131,7 +131,7 @@ export function LoginForm() {
       redirect: true,
       callbackUrl: "/dashboard",
     });
-  };
+  }; 
 
   return (
     <Card className="w-full max-w-md shadow-lg">
